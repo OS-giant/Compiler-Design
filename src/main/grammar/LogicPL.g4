@@ -161,13 +161,21 @@ additive2:
     |
     ;
 
-multicative:
-    unary multicative2
+multicative  returns[Expression expr]:
+    l = unary r = multicative2
+    {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-multicative2:
-    ( MULT | MOD | DIV ) unary multicative2
-    |
+multicative2 returns[BinaryExpression expr]:
+     {BinaryOperator bop = new BinaryOperator();}
+     ( MULT {bop = BinaryOperator.mult;}
+     | MOD  {bop = BinaryOperator.mod;}
+     | DIV  {bop = BinaryOperator.div;}
+     )
+     (left = unary) (right = multicative2)
+     {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+
+    | {$expr = new BinaryExpression();}
     ;
 
 unary returns[Expression expr]:
