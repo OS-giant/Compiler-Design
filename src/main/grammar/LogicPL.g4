@@ -88,8 +88,11 @@ query:
      | queryType2
     ;
 
-queryType1:
-    LBRACKET QUARYMARK predicateIdentifier LPAR variable RPAR RBRACKET
+queryType1 returns [QueryExpression qexp]:
+    LBRACKET QUARYMARK id = predicateIdentifier LPAR var = variable RPAR RBRACKET
+    {$qexp = new QueryExpression($id.identifierRet);
+     $qexp.setVar($var.var);
+    }
     ;
 
 queryType2:
