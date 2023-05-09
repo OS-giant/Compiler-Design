@@ -183,16 +183,18 @@ functionCall returns[FunctionCall funcall]:
     {$funcall = new FunctionCall(my_args,$id.identifierRet);}
     ;
 
-value:
-    numericValue
-    | TRUE
-    | FALSE
-    | MINUS numericValue
+value returns[Value val]:
+    v = numericValue {$val = $v.val;}
+    | TRUE {$val = new BooleanValue(true); $val.setType(new BooleanType());}
+    | FALSE {$val = new BooleanValue(false); $val.setType(new BooleanType());}
+    | MINUS v = numericValue {$val = $v.val; }
     ;
 
 numericValue returns[Value val]:
-    INT_NUMBER {$val = new IntValue(Integer.parseInt($INT_NUMBER.getText()));}
-    | FLOAT_NUMBER {$val = new FloatValue(Float.parseFloat($FLOAT_NUMBER.getText()));}
+    INT_NUMBER {$val = new IntValue(Integer.parseInt($INT_NUMBER.getText()));
+                $val.setType(new IntType());}
+    | FLOAT_NUMBER {$val = new FloatValue(Float.parseFloat($FLOAT_NUMBER.getText()));
+                    $val.setType(new FloatType());}
     ;
 
 identifier returns[Identifier identifierRet]:
