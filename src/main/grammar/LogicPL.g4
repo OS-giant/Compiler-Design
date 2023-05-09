@@ -48,7 +48,8 @@ assignSmt:
 
 variable returns[Variable var]:
     i = identifier {$var = $i.identifierRet;}
-    | i = identifier LBRACKET expression RBRACKET  {$var = $i.identifierRet;}
+    | i = identifier LBRACKET e = expression RBRACKET
+    {$var = new ArrayAccess($i.identifierRet.getName(),$e.expr);}
     ;
 
 localVarDeclaration:
