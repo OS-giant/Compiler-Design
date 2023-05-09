@@ -46,8 +46,9 @@ assignSmt:
     variable ASSIGN expression SEMICOLON
     ;
 
-variable:
-    identifier | identifier LBRACKET expression RBRACKET
+variable returns[Variable var]:
+    i = identifier {$var = $i.identifierRet;}
+    | i = identifier LBRACKET expression RBRACKET  {$var = $i.identifierRet;}
     ;
 
 localVarDeclaration:
