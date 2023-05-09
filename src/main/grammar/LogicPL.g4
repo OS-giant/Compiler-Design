@@ -215,10 +215,10 @@ predicateIdentifier returns[Identifier identifierRet]:
     PREDICATE_IDENTIFIER {$identifierRet = new Identifier($PREDICATE_IDENTIFIER.getText());}
     ;
 
-type:
-    BOOLEAN
-    | INT
-    | FLOAT
+type returns [Type t]:
+    BOOLEAN {$t = new BooleanType();}
+    | INT {$t = new IntType();}
+    | FLOAT {$t = new FloatType();}
     ;
 
 
