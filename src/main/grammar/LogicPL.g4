@@ -111,7 +111,7 @@ implication:
     LPAR expression RPAR ARROW LPAR ((statement)+) RPAR
     ;
 
-expression:
+expression returns [Expression expr]:
     andExpr expression2
     ;
 
@@ -196,7 +196,7 @@ numericValue:
     ;
 
 identifier returns[Identifier identifierRet]:
-    IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText());
+    IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText())}
     ;
 
 predicateIdentifier:
