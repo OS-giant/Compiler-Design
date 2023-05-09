@@ -190,9 +190,9 @@ value:
     | MINUS numericValue
     ;
 
-numericValue:
-    INT_NUMBER
-    | FLOAT_NUMBER
+numericValue returns[Value val]:
+    INT_NUMBER {$val = new IntValue(Integer.parseInt($INT_NUMBER.getText()));}
+    | FLOAT_NUMBER {$val = new FloatValue(Float.parseFloat($FLOAT_NUMBER.getText()));}
     ;
 
 identifier returns[Identifier identifierRet]:
