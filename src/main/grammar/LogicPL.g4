@@ -185,7 +185,7 @@ other returns[Expression expr]:
     LPAR e = expression RPAR {$expr = $e.expr;}
     | evar = variable {$expr = $evar.var;}
     | eval = value {$expr = $eval.val;}
-    | queryType1
+    | equery = queryType1 {$expr = $equery.qexp;}
     | ef = functionCall {$expr = $ef.funcall;}
     ;
 
