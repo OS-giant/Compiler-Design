@@ -167,10 +167,15 @@ multicative2:
     |
     ;
 
-unary:
-    other
+unary returns[Expression expr]:
+    ex = other {$expr = $ex.expr;}
     |
-     ( PLUS | MINUS | NOT ) other
+     {UnaryOperator uop = new UnaryOperator();}
+     ( PLUS {uop = UnaryOperator.plus;}
+     | MINUS {uop = UnaryOperator.minus;}
+     | NOT {uop = UnaryOperator.not;}
+     )
+    ex = other {$expr = new UnaryExpression(uop,$ex.expr);}
     ;
 
 other returns[Expression expr]:
