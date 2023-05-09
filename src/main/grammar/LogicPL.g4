@@ -211,8 +211,8 @@ identifier returns[Identifier identifierRet]:
     IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText());}
     ;
 
-predicateIdentifier:
-    PREDICATE_IDENTIFIER
+predicateIdentifier returns[Identifier identifierRet]:
+    PREDICATE_IDENTIFIER {$identifierRet = new Identifier($PREDICATE_IDENTIFIER.getText());}
     ;
 
 type:
