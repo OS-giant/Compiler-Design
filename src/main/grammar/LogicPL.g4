@@ -173,9 +173,12 @@ unary:
      ( PLUS | MINUS | NOT ) other
     ;
 
-other:
-    LPAR expression RPAR | variable | value
-    | queryType1 | functionCall
+other returns[Expression expr]:
+    LPAR e = expression RPAR {$expr = $e.expr;}
+    | evar = variable {$expr = $evar.var;}
+    | eval = value {$expr = $eval.val;}
+    | queryType1
+    | ef = functionCall {$expr = $ef.funcall;}
     ;
 
 functionCall returns[FunctionCall funcall]:
