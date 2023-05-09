@@ -196,7 +196,7 @@ numericValue:
     ;
 
 identifier returns[Identifier identifierRet]:
-    IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText())}
+    IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText());}
     ;
 
 predicateIdentifier:
