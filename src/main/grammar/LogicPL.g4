@@ -176,8 +176,11 @@ other:
     | queryType1 | functionCall
     ;
 
-functionCall:
-    identifier LPAR (expression (COMMA expression)*)? RPAR
+functionCall returns[FunctionCall funcall]:
+    { ArrayList<Expression> my_args = new ArrayList<Expression>();}
+    id = identifier LPAR (e1 = expression {my_args.add($e1.expr)}
+    (COMMA e2 = expression {my_args.add($e2.expr)})*)? RPAR
+    {$funcall = new FunctionCall(my_args,$id.identifierRet);}
     ;
 
 value:
