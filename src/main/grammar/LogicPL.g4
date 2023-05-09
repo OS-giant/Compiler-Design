@@ -192,8 +192,8 @@ numericValue:
     | FLOAT_NUMBER
     ;
 
-identifier:
-    IDENTIFIER
+identifier returns[Identifier identifierRet]:
+    IDENTIFIER {$identifierRet = new Identifier($IDENTIFIER.getText());
     ;
 
 predicateIdentifier:
