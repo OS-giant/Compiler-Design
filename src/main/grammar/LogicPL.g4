@@ -164,7 +164,7 @@ additive2:
 multicative  returns[Expression expr]:
     l = unary r = multicative2
     {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
-    ;
+    ;;
 
 multicative2 returns[BinaryExpression expr]:
      {BinaryOperator bop = new BinaryOperator();}
