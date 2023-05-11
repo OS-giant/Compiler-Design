@@ -36,14 +36,22 @@ mainBlock returns [MainDeclaration main]:
     {$main = new MainDeclaration(mainStmts); $main.setLine($m.getLine());}
     ;
 
-statement:
-    assignSmt | ( predicate SEMICOLON )
-    | implication | returnSmt
-    | printSmt | forLoop | localVarDeclaration
+statement returns [Statement stmt]:
+      a = assignSmt { $stmt = $a.assign_stmt; } 
+    | ( p = predicate { $stmt = $p.predStmt; } SEMICOLON )
+    | i = implication { $stmt = $i.impStmt; }
+    | r = returnSmt { $stmt = $r.retStmt; }
+    | pr = printSmt { $stmt = $pr.prntStmt; }
+    | f = forLoop { $stmt = $f.forStmt; }
+    | lv = localVarDeclaration { $stmt = $lv.varDec; }
     ;
 
-assignSmt:
-    variable ASSIGN expression SEMICOLON
+assignSmt returns [AssignStmt assign_stmt]:
+     l = variable
+     ASSIGN
+     r = expression
+     SEMICOLON
+     {$assign_stmt = new AssignStmt($l.assign_stmt, $r.assign_stmt)}
     ;
 
 variable returns[Variable var]:
@@ -52,68 +60,101 @@ variable returns[Variable var]:
     {$var = new ArrayAccess($i.identifierRet.getName(),$e.expr);}
     ;
 
-localVarDeclaration:
-     varDeclaration
-    | arrayDeclaration
+localVarDeclaration returns[VarDecStmt varDec]:
+      v = varDeclaration { $varDec = $v.varDec; }
+    | a = arrayDeclaration { $varDec = $a.arrdecstmt; }
     ;
 
-varDeclaration:
-    type identifier (ASSIGN expression )? SEMICOLON
+varDeclaration returns[VarDecStmt varDec]:
+    t = type { $varDec.type = $varDec.setType(t); }
+    id = identifier { $varDec.identifier = $id.identifierRet; } 
+    (ASSIGN e = expression 
+    {   $varDec = new VarDecStmt($varDec.identifier, $varDec.type);
+        $varDec.initialExpression = $varDec.setInitialExpression(e.expr); })? SEMICOLON
     ;
 
-arrayDeclaration:
-    type LBRACKET INT_NUMBER RBRACKET identifier
-    (arrayInitialValue )? SEMICOLON
+arrayDeclaration returns[ArrayDecStmt arrdecstmt]:
+    { ArrayList<Expression> my_exprs = new ArrayList<Expression>(); }
+    t = type { $arrdecstmt.type = $arrdecstmt.setType(t); } LBRACKET INT_NUMBER 
+    { $arrdecstmt.arrSize = new IntValue(Integer.parseInt($INT_NUMBER.getText())); } RBRACKET 
+    id = identifier { $arrdecstmt.identifier = $id.identifierRet; }
+    (a = arrayInitialValue { $my_exprs.add($a.expr) } )? SEMICOLON
+    { $arrdecstmt = new ArrayDecStmt($arrdecstmt.identifier, $arrdecstmt.type, $arrdecstmt.arrSize); 
+      $arrdecstmt.setInitialValues(my_exprs)}
     ;
 
-arrayInitialValue:
-    ASSIGN arrayList
+
+arrayInitialValue returns [Expression expr]:
+    ASSIGN arrayList { $exp = $arrayList.val; }
     ;
 
-arrayList:
-    LBRACKET ( value | identifier ) (COMMA ( value | identifier ))* RBRACKET
+/////////////////////////////////
+arrayList returns [Expression expr]:
+    {  ArrayList<Expression> my_inits = new ArrayList<Expression>(); }
+    LBRACKET ( v = value { $expr.identifier = $v.var; $expr.setType($v) $my_inits.add($v.val)}
+    | id = identifier { $val.identifier = $id.identifierRet; $my_inits.add($id.identifierRet) } )
+    (COMMA ( value | identifier { $val.identifier = $id.identifierRet }))* RBRACKET
+    { $expr = new Expression()}
+    ;
+///////////////////////////////
+
+
+printSmt returns[PrintStmt prntStmt]:
+    PRINT LPAR p = printExpr { $prntStmt.arg = $p.expr } RPAR SEMICOLON
+    { $prntStmt = new PrintStmt($prntStmt.arg); }
     ;
 
-printSmt:
-    PRINT LPAR printExpr RPAR SEMICOLON
+
+printExpr returns [Expression expr]:
+      v = variable { $exp = $v.var; }
+    | q = query { $exp = $q.exp; }
     ;
 
-printExpr:
-    variable
-    | query
+
+query returns [QueryExpression exp]:
+      q1 = queryType1 { $exp = $q1.qexp; }
+    | q2 = queryType2 { $exp = $q2.qexp; }
     ;
 
-query:
-      queryType1
-     | queryType2
-    ;
 
 queryType1 returns [QueryExpression qexp]:
     LBRACKET QUARYMARK id = predicateIdentifier LPAR var = variable RPAR RBRACKET
     {$qexp = new QueryExpression($id.identifierRet);
-     $qexp.setVar($var.var);
+    $qexp.setVar($var.var);
     }
     ;
 
-queryType2:
-    LBRACKET predicateIdentifier LPAR QUARYMARK RPAR RBRACKET
+
+queryType2 returns [QueryExpression qexp]:
+    LBRACKET pid = predicateIdentifier { $qexp.predicateName = $pid.identifierRet; } LPAR QUARYMARK RPAR RBRACKET
     ;
 
-returnSmt:
-    RETURN (value  | identifier)? SEMICOLON
+
+returnSmt returns [ReturnStmt retStmt]:
+    RETURN (v = value { $retStmt.expression = $v.val; } | id = identifier { $retStmt.setExpression($id.identifierRet); } )? SEMICOLON
     ;
 
-forLoop:
-    FOR LPAR identifier COLON identifier RPAR
-    LBRACE ((statement)*) RBRACE
+
+forLoop returns[ForloopStmt forStmt]:
+    { ArrayList<Statement> my_statements = new ArrayList<Statement>(); }
+    FOR LPAR id = identifier { $forStmt.iterator = $id.identifierRet; } COLON arrid = identifier { $forStmt.arrayName = $arrid.identifierRet; } RPAR
+    LBRACE ((statement{ my_statements.add($s.stmt) })*) RBRACE
+    { $forStmt = new ForloopStmt($forStmt.iterator, $forStmt.arrayName, my_statements); }
     ;
 
-predicate:
-    predicateIdentifier LPAR variable RPAR
+
+predicate returns [PredicateStmt predStmt]:
+    pid = predicateIdentifier { $predStmt.identifier = $pid.identifierRet; }
+    LPAR v = variable { $predStmt.var = $v.var; } RPAR
+    { $predStmt = new PredicateStmt($predStmt.identifier, $predStmt.var); }
     ;
 
-implication:
-    LPAR expression RPAR ARROW LPAR ((statement)+) RPAR
+
+implication returns [ImplicationStmt impStmt]:
+    { ArrayList<Statement> my_statements = new ArrayList<Statement>();}
+    LPAR e = expression { $impStmt.condition = $e.expr } RPAR ARROW LPAR 
+    ((s = statement{ my_statements.add($s.stmt) })+) RPAR
+    { $impStmt = new ImplicationStmt($impStmt.condition, my_statements); }
     ;
 
 expression returns [Expression expr]:
