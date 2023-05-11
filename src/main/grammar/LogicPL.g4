@@ -117,48 +117,76 @@ implication:
     ;
 
 expression returns [Expression expr]:
-    andExpr expression2
+    l = andExpr r = expression2
+    {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-expression2:
-    OR andExpr expression2
-    |
+expression2  returns[BinaryExpression expr]:
+    {BinaryOperator bop = new BinaryOperator();}
+    OR {bop = BinaryOperator.or;}
+    (left = andExpr) (right = expression2)
+    {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+    |{$expr = new BinaryExpression();}
     ;
 
-andExpr:
-    eqExpr andExpr2
+andExpr returns[Expression expr]:
+    l = eqExpr r = andExpr2
+    {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-andExpr2:
-    AND eqExpr andExpr2
-    |
+andExpr2 returns[BinaryExpression expr]:
+    {BinaryOperator bop = new BinaryOperator();}
+    AND {bop = BinaryOperator.and;}
+    (left = eqExpr) (right = andExpr2)
+    {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+    |{$expr = new BinaryExpression();}
     ;
 
-eqExpr:
-    compExpr eqExpr2
+eqExpr returns[Expression expr]:
+    l = compExpr  r = eqExpr2
+    {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-eqExpr2:
-    ( EQ | NEQ ) compExpr eqExpr2
-    |
+eqExpr2 returns[BinaryExpression expr]:
+    {BinaryOperator bop = new BinaryOperator();}
+    ( EQ {bop = BinaryOperator.eq;}
+    | NEQ {bop = BinaryOperator.neq;}
+    )
+    (left = compExpr) (right = eqExpr2)
+    {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+    |{$expr = new BinaryExpression();}
     ;
 
-compExpr:
-    additive compExpr2
+compExpr returns[Expression expr]:
+   l = additive r = compExpr2
+   {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-compExpr2:
-    ( LT | LTE | GT | GTE) additive compExpr2
-    |
+compExpr2 returns[BinaryExpression expr]:
+    {BinaryOperator bop = new BinaryOperator();}
+    ( LT {bop = BinaryOperator.lt;}
+    | LTE {bop = BinaryOperator.lte;}
+    | GT {bop = BinaryOperator.gt;}
+    | GTE {bop = BinaryOperator.gte;}
+    )
+    (left =additive) (right = compExpr2)
+    {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+    |{$expr = new BinaryExpression();}
     ;
 
-additive:
-    multicative additive2
+additive returns[Expression expr]:
+    l = multicative  r = additive2
+    {$expr = new BinaryExpression($l.expr,$r.expr.getLeft(),$r.expr.getBinaryOperator());}
     ;
 
-additive2:
-    ( PLUS | MINUS ) multicative additive2
-    |
+additive2 returns[BinaryExpression expr]:
+    {BinaryOperator bop = new BinaryOperator();}
+    ( PLUS {bop = BinaryOperator.add;}
+    | MINUS {bop = BinaryOperator.sub;}
+    )
+    (left =multicative)  (right = additive2)
+    {$expr = new BinaryExpression($left.expr,$right.expr,bop);}
+    |{$expr = new BinaryExpression();}
     ;
 
 multicative  returns[Expression expr]:
