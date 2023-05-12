@@ -27,7 +27,7 @@ public class NameAnalyzer extends Visitor<Void> {
         }
 
         for (var stmt : program.getMain().getMainStatements()) {
-            if(stmt instanceof VarDecStmt) {
+            if (stmt instanceof VarDecStmt) {
                 stmt.accept(this);
             }
         }
@@ -35,16 +35,37 @@ public class NameAnalyzer extends Visitor<Void> {
         return null;
     }
 
-
+    
     @Override
     public Void visit(FuncDeclaration funcDeclaration) {
         var functionItem = new FunctionItem(funcDeclaration);
         var functionSymbolTable = new SymbolTable(SymbolTable.top, funcDeclaration.getName().getName());
         functionItem.setFunctionSymbolTable(functionSymbolTable);
+        functio
 
-        // ToDo
+        funcDeclaration.setArgs(funcDeclaration.getArgs());
+        funcDeclaration.setStatements(funcDeclaration.getStatements());
+        funcDeclaration.setIdentifier(funcDeclaration.getIdentifier());
 
+        try {
+            Sy mbolTable.root.put(functionItem);
+        }catch (ItemAlreadyExistsException e)
+        {
+        FunctionRedefinition functionRedefinition = new
+        FunctionRedefinition(funcDeclaration.getLine(),funcDeclaration.getName().getName());
 
+        this.nameErrors.add(functionRedefinition);
+        }
+        SymbolTable symbolTable = new SymbolTable();
+        symbolTable.pre = SymbolTable.top;
+        functionItem.setFunctionSymbolTable(symbolTable);
+        SymbolTable.push(symbolTable);
+
+        if(funcDeclaration.getName() != null)
+            funcDeclaration.getName().accept(this);
+
+        if(funcDeclaration.getIdentifier() != null)
+ 
         for (ArgDeclaration varDeclaration : funcDeclaration.getArgs()) {
             varDeclaration.accept(this);
         }
@@ -62,10 +83,24 @@ public class NameAnalyzer extends Visitor<Void> {
     @Override
     public Void visit(VarDecStmt varDeclaration) {
         var variableItem = new VariableItem(varDeclaration.getIdentifier().getName(), varDeclaration.getType());
+        variableItem.setName(varDeclaration.getIdentifier().getName());
+        variableItem.setType(varDeclaration.getType());
+        variableItem.setVarDeclaration(varDeclaration);
 
-        // ToDo
+        try {
+        SymbolTable.root.put(variableItem);
+        }catch (ItemAlreadyExistsException e){
+        VariableRedefinition variableRedefinition = new
+        VariableRedefinition(varDeclaration.getLine(),varDeclaration.getIdentifier().getName());
+        this.nameErrors.add(variableRedefinition);
+
+        }
+        if(varDeclaration.getIdentifier()!= null)
+            varDeclaration.getIdentifier().accept(this);
+
+        if(varDeclaration.getInitialExpression()!=null)
+            varDeclaration.getInitialExpression().accept(this);
 
         return null;
     }
 }
-
